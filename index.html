@@ -228,7 +228,7 @@ footer { color: var(--muted); font-size: 12px; text-align: center; }
         const mark = el('i'); mark.style.right = (BUDGET / max * 100) + '%'; bar.appendChild(mark);
         li.appendChild(bar);
       } else {
-        li.appendChild(el('div', 'pv-na', booked ? 'محجوز يوم 18' : 'ننتظر السعر'));
+        li.appendChild(el('div', 'pv-na', booked ? 'محجوز يوم 18' : r.price_weekday != null ? 'وسط الأسبوع ' + fmt(r.price_weekday) : 'ما نشروا سعر'));
       }
       ol.appendChild(li);
     });
