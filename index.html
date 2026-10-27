@@ -48,6 +48,7 @@ h2 { font-family: var(--display); font-weight: 600; font-size: 1.15rem; margin: 
 .rank .nm { font-size: 14px; }
 .rank .nm small { color: var(--muted); font-size: 12px; }
 .rank .pv { font-family: var(--display); color: var(--gold); font-size: 1.15rem; font-variant-numeric: tabular-nums; }
+.rank .pv-na { color: var(--unk); font-size: 12px; }
 .rank .bar { grid-column: 1 / -1; height: 6px; border-radius: 6px; background: var(--panel-2); position: relative; overflow: visible; }
 .rank .bar span { position: absolute; inset-block: 0; right: 0; border-radius: 6px; }
 .rank .bar i { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--gold); border-radius: 2px; }
@@ -138,7 +139,7 @@ footer { color: var(--muted); font-size: 12px; text-align: center; }
   <div class="stats" id="stats"></div>
 
   <section class="box" aria-label="الأسعار">
-    <h2>سعر ليلة الجمعة لأكبر نموذج</h2>
+    <h2>سعر ليلة الجمعة</h2>
     <p class="hint" id="rankNote"></p>
     <ol class="rank" id="rank"></ol>
     <div class="keys">
@@ -208,18 +209,23 @@ footer { color: var(--muted); font-size: 12px; text-align: center; }
   }
 
   function drawRank() {
-    const priced = V.filter((r) => r.price_friday != null && statusOf(r) !== 'booked').sort((a, b) => a.price_friday - b.price_friday);
-    const max = Math.max(BUDGET, ...priced.map((r) => r.price_friday));
-    $('#rankNote').textContent = 'هنا بس اللي عرفنا سعرهم (' + priced.length + ' من ' + V.length + '). كل الاستراحات الـ' + V.length + ' تحت.';
+    const all = V.slice().sort((a, b) => ((statusOf(a) === 'booked') - (statusOf(b) === 'booked')) || (a.price_friday ?? 1e9) - (b.price_friday ?? 1e9));
+    const known = all.filter((r) => r.price_friday != null && statusOf(r) !== 'booked');
+    const max = Math.max(BUDGET, ...known.map((r) => r.price_friday));
+    $('#rankNote').textContent = '';
     const ol = $('#rank'); ol.replaceChildren();
-    priced.forEach((r) => {
+    all.forEach((r) => {
       const li = el('li');
-      const nm = el('div', 'nm', r.name + ' '); nm.appendChild(el('small', null, r.unit_sure === false ? '(ما تأكدنا إنه الأكبر)' : r.unit_short || ''));
-      li.appendChild(nm);
-      li.appendChild(el('div', 'pv', fmt(r.price_friday)));
-      const bar = el('div', 'bar'); const sp = el('span', level(r.price_friday) + '-c'); sp.style.width = (r.price_friday / max * 100) + '%'; bar.appendChild(sp);
-      const mark = el('i'); mark.style.right = (BUDGET / max * 100) + '%'; bar.appendChild(mark);
-      li.appendChild(bar);
+      li.appendChild(el('div', 'nm', r.name));
+      const booked = statusOf(r) === 'booked';
+      if (r.price_friday != null && !booked) {
+        li.appendChild(el('div', 'pv', fmt(r.price_friday)));
+        const bar = el('div', 'bar'); const sp = el('span', level(r.price_friday) + '-c'); sp.style.width = (r.price_friday / max * 100) + '%'; bar.appendChild(sp);
+        const mark = el('i'); mark.style.right = (BUDGET / max * 100) + '%'; bar.appendChild(mark);
+        li.appendChild(bar);
+      } else {
+        li.appendChild(el('div', 'pv-na', booked ? 'محجوز يوم 18' : 'ننتظر السعر'));
+      }
       ol.appendChild(li);
     });
   }
@@ -264,7 +270,6 @@ footer { color: var(--muted); font-size: 12px; text-align: center; }
         const lv = level(r.price_friday); const b = el('span', 'badge ' + lv + '-c', lv === 'ok' ? 'ضمن' : lv === 'near' ? 'أعلى بشوي' : 'أعلى'); pw.appendChild(b);
       } else pw.appendChild(el('span', 'na', 'سعر الجمعة: ما عرفناه'));
       if (r.price_weekday != null) pw.appendChild(el('span', 'w', 'وسط الأسبوع ' + fmt(r.price_weekday)));
-      if (r.unit_sure === false) pw.appendChild(el('span', 'u', 'ما تأكدنا إنه سعر الأكبر'));
       if (r.price_source) pw.appendChild(el('span', 's', r.price_source));
       p.appendChild(pw);
 
