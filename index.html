@@ -93,6 +93,8 @@ a.lk.v .i { color: var(--bad); }
 .reply .ro { font-size: 13px; }
 .reply .saved { font-size: 11px; color: var(--ok); min-height: 1em; }
 .st-wait { color: var(--unk); } .st-auto { color: var(--sky); } .st-price { color: var(--gold); } .st-yes { color: var(--ok); } .st-no { color: var(--bad); }
+.headrow { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+a.lk.edit { background: var(--gold); color: var(--ink); border-color: var(--gold); font-weight: 600; }
 .legend2 { display: flex; flex-wrap: wrap; gap: 6px; margin-top: -10px; }
 .gaps { display: grid; gap: 2px; font-size: 12px; color: var(--bad); }
 .gaps span { display: inline-flex; gap: 4px; align-items: center; }
@@ -151,7 +153,7 @@ footer { color: var(--muted); font-size: 12px; text-align: center; }
     </div>
   </section>
 
-  <h2 id="allHead">كل الاستراحات</h2>
+  <div class="headrow"><h2 id="allHead">كل الاستراحات</h2><a class="lk edit" id="editSheet" href="#" target="_blank" rel="noopener" hidden>✏️ تعديل حالة الرد</a></div>
   <p class="hint legend2"><span class="req y">✓ أخضر = نعم</span> <span class="req n">✗ أحمر = لا</span> <span class="req u">؟ رمادي = ما نعرف للحين</span></p>
   <section class="list" aria-label="الاستراحات">
     <table>
@@ -309,6 +311,7 @@ footer { color: var(--muted); font-size: 12px; text-align: center; }
 
   // Public site: read reply status from the shared Google Sheet (column "حالة الرد", keyed by id)
   const SHEET_ID = '1n9Ce1lMkIxXZD56vfJQrB87J-CdfXXmL7NG2JdI4lZc';
+  if (SHEET_ID && !SHEET_ID.startsWith('__')) { const e = $('#editSheet'); e.href = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/edit'; e.hidden = false; }
   if (SHEET_ID && !SHEET_ID.startsWith('__') && !window.claude) {
     const byLabel = Object.fromEntries(STATUS.map(([k, l]) => [l, k]));
     window.__manarSheet = (res) => {
